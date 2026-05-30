@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-cd /root/task
+cd "$(dirname "$0")"
 echo "Starting trading app containers..."
 docker-compose up -d
 echo "Waiting for PostgreSQL to start..."
@@ -10,7 +10,7 @@ for i in {1..30}; do
 done
 sleep 3
 for i in {1..10}; do
-  curl -sf http://localhost:8000/docs && break
+  curl -sf http://localhost:8001/docs && break
   sleep 2
 done
 echo "Trading API and Postgres ready!"

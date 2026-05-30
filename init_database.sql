@@ -2,12 +2,14 @@
 CREATE TABLE portfolios (
     id BIGSERIAL PRIMARY KEY,
     owner VARCHAR(100) NOT NULL,
-    name VARCHAR(100) NOT NULL
-    -- no unique(owner, name) constraint
+    name VARCHAR(100) NOT NULL,
+    CONSTRAINT uq_portfolios_owner_name UNIQUE (owner, name)
 );
+CREATE INDEX idx_portfolios_owner ON portfolios (owner);
+
 CREATE TABLE trades (
     id BIGSERIAL PRIMARY KEY,
-    portfolio_id BIGINT,
+    portfolio_id BIGINT NOT NULL,
     ticker VARCHAR(16) NOT NULL,
     side VARCHAR(8),
     amount FLOAT8,
@@ -16,6 +18,10 @@ CREATE TABLE trades (
     status VARCHAR(16),
     FOREIGN KEY(portfolio_id) REFERENCES portfolios(id)
 );
+CREATE INDEX idx_trades_portfolio_id_trade_time ON trades (portfolio_id, trade_time DESC);
+CREATE INDEX idx_trades_ticker ON trades (ticker);
+CREATE INDEX idx_trades_status ON trades (status);
+
 CREATE TABLE market_data (
     id BIGSERIAL PRIMARY KEY,
     ticker VARCHAR(16) NOT NULL,
@@ -23,8 +29,9 @@ CREATE TABLE market_data (
     price FLOAT8,
     volume FLOAT8,
     extra_json JSON
-    -- no index on trade_time or ticker
 );
+CREATE INDEX idx_market_data_ticker_trade_time ON market_data (ticker, trade_time DESC);
+
 CREATE TABLE audit_logs (
     id BIGSERIAL PRIMARY KEY,
     trade_id BIGINT,
@@ -32,8 +39,9 @@ CREATE TABLE audit_logs (
     event_data JSON NOT NULL,
     log_timestamp TIMESTAMP NOT NULL,
     FOREIGN KEY(trade_id) REFERENCES trades(id)
-    -- no index on trade_id or log_timestamp, allows NULLs
 );
+CREATE INDEX idx_audit_logs_trade_id ON audit_logs (trade_id);
+CREATE INDEX idx_audit_logs_log_timestamp ON audit_logs (log_timestamp DESC);
 -- Seed portfolios
 INSERT INTO portfolios (owner, name) VALUES ('alice', 'growth'), ('bob', 'value'), ('carol', 'daytrade');
 -- Seed trades and market_data

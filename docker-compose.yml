@@ -6,8 +6,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - /root/task/data/pgdata:/var/lib/postgresql/data
-      - /root/task/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
+      - ./data/pgdata:/var/lib/postgresql/data
+      - ./init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
     environment:
       - POSTGRES_DB=tradingdb
       - POSTGRES_USER=traderadmin
@@ -15,14 +15,14 @@ services:
     networks:
       - trading-net
   fastapi:
-    build: /root/task
+    build: .
     container_name: trading-fastapi
     depends_on:
       - postgres
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
-      - /root/task:/root/task
+      - .:/root/task
     working_dir: /root/task
     entrypoint: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     networks:
